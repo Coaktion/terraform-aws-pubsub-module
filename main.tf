@@ -1,5 +1,5 @@
 module "sns_topics" {
-  source          = "../sns"
+  source          = "github.com/paulo-tinoco/terraform-sns-module"
   topics          = var.topics
   fifo_topic      = var.fifo
   default_tags    = var.default_tags
@@ -7,7 +7,7 @@ module "sns_topics" {
 }
 
 module "sqs_queues" {
-  source          = "../sqs"
+  source          = "github.com/paulo-tinoco/terraform-sqs-module"
   queues          = var.queues
   fifo_queue      = var.fifo
   default_tags    = var.default_tags
