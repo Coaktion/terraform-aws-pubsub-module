@@ -53,6 +53,8 @@ module "name_service_example_sns_topics" {
     }
   ]
 
-  fifo       = true
+  # fifo       = true
   account_id = "000000000000"
+
+  resource_prefix = "name_service_example"
 }

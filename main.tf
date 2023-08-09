@@ -19,8 +19,14 @@ locals {
 
   queues = flatten([
     for sqs_queue in var.queues : {
-      name                = var.resource_prefix != "" ? "${var.resource_prefix}${sqs_queue.name}" : sqs_queue.name
-      topics_to_subscribe = sqs_queue.topics_to_subscribe
+      name                = var.resource_prefix != "" ? "${var.resource_prefix}__${sqs_queue.name}" : sqs_queue.name
+      topics_to_subscribe = flatten([
+        for topic in sqs_queue.topics_to_subscribe : [
+          {
+            name = var.resource_prefix != "" ? "${var.resource_prefix}__${topic.name}" : topic.name
+          }
+        ]
+      ])
     }
   ])
 
