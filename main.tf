@@ -19,7 +19,7 @@ locals {
 
   queues = flatten([
     for sqs_queue in var.queues : {
-      name                = var.resource_prefix != "" ? "${var.resource_prefix}__${sqs_queue.name}" : sqs_queue.name
+      name = var.resource_prefix != "" ? "${var.resource_prefix}__${sqs_queue.name}" : sqs_queue.name
       topics_to_subscribe = flatten([
         for topic in sqs_queue.topics_to_subscribe : [
           {
@@ -40,6 +40,7 @@ locals {
         topic_name     = var.fifo ? "${topic.name}.fifo" : topic.name,
         topic_arn      = var.fifo ? "${local.arn_sns_prefix}${topic.name}.fifo" : "${local.arn_sns_prefix}${topic.name}",
         sqs_queue_name = var.fifo ? "${sqs_queue.name}.fifo" : sqs_queue.name,
+        filter_policy  = lookup(topic, "filter_policy", var.default_filter_policy)
       }
     ]
   ])
@@ -56,5 +57,5 @@ resource "aws_sns_topic_subscription" "sns_queues_subscriptions" {
   topic_arn     = each.value.topic_arn
   protocol      = "sqs"
   endpoint      = module.sqs_queues.queues[each.value.sqs_queue_name].arn
-  filter_policy = jsonencode({ "region" : ["br"] })
+  filter_policy = jsonencode(each.value.filter_policy)
 }
