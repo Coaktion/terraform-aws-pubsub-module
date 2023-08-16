@@ -21,7 +21,7 @@ variable "queues" {
     name = string
     topics_to_subscribe = list(object({
       name          = string
-      filter_policy = optional(map(string))
+      filter_policy = optional(map(list(string)))
     }))
   }))
   default = []

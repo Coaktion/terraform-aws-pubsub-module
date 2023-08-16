@@ -23,7 +23,8 @@ locals {
       topics_to_subscribe = flatten([
         for topic in sqs_queue.topics_to_subscribe : [
           {
-            name = var.resource_prefix != "" ? "${var.resource_prefix}__${topic.name}" : topic.name
+            name          = var.resource_prefix != "" ? "${var.resource_prefix}__${topic.name}" : topic.name
+            filter_policy = topic.filter_policy
           }
         ]
       ])
@@ -36,11 +37,12 @@ locals {
 
   subscriptions = flatten([
     for sqs_index, sqs_queue in local.queues : [
-      for topic in sqs_queue.topics_to_subscribe : {
-        topic_name     = var.fifo ? "${topic.name}.fifo" : topic.name,
-        topic_arn      = var.fifo ? "${local.arn_sns_prefix}${topic.name}.fifo" : "${local.arn_sns_prefix}${topic.name}",
+      for subscribe in sqs_queue.topics_to_subscribe : {
+
+        topic_name     = var.fifo ? "${subscribe.name}.fifo" : subscribe.name,
+        topic_arn      = var.fifo ? "${local.arn_sns_prefix}${subscribe.name}.fifo" : "${local.arn_sns_prefix}${subscribe.name}",
         sqs_queue_name = var.fifo ? "${sqs_queue.name}.fifo" : sqs_queue.name,
-        filter_policy  = lookup(topic, "filter_policy", var.default_filter_policy)
+        filter_policy  = lookup(subscribe, "filter_policy", var.default_filter_policy)
       }
     ]
   ])

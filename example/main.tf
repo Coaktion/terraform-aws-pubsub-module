@@ -48,6 +48,9 @@ module "name_service_example_sns_topics" {
       topics_to_subscribe = [
         {
           name = "validation_topic"
+          filter_policy = {
+            "event_type" = ["validation"]
+          }
         }
       ]
     }
