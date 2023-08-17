@@ -24,7 +24,7 @@ locals {
         for topic in sqs_queue.topics_to_subscribe : [
           {
             name          = var.resource_prefix != "" ? "${var.resource_prefix}__${topic.name}" : topic.name
-            filter_policy = topic.filter_policy
+            filter_policy = topic.filter_policy != null ? topic.filter_policy : var.default_filter_policy
           }
         ]
       ])
@@ -42,7 +42,7 @@ locals {
         topic_name     = var.fifo ? "${subscribe.name}.fifo" : subscribe.name,
         topic_arn      = var.fifo ? "${local.arn_sns_prefix}${subscribe.name}.fifo" : "${local.arn_sns_prefix}${subscribe.name}",
         sqs_queue_name = var.fifo ? "${sqs_queue.name}.fifo" : sqs_queue.name,
-        filter_policy  = lookup(subscribe, "filter_policy", var.default_filter_policy)
+        filter_policy  = subscribe.filter_policy
       }
     ]
   ])

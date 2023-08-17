@@ -11,7 +11,7 @@ variable "region" {
 
 variable "default_filter_policy" {
   description = "The default filter policy to apply to subscriptions. This is a map of attribute name/value pairs. The default is an empty map, which matches all messages."
-  type        = map(string)
+  type        = map(list(string))
   default     = {}
 }
 
