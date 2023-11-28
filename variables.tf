@@ -18,7 +18,8 @@ variable "default_filter_policy" {
 variable "queues" {
   description = "A list of maps describing the queues to create. Each map must contain a name key. The following keys are optional: delay_seconds, max_message, message_retention_seconds, receive_wait_time_seconds, max_receive_count, topics_to_subscribe."
   type = list(object({
-    name = string
+    name         = string
+    create_queue = optional(bool, true)
     topics_to_subscribe = list(object({
       name          = string
       filter_policy = optional(map(list(string)))

@@ -1,7 +1,7 @@
 resource "aws_sqs_queue_policy" "policy" {
-  for_each = module.sqs_queues.queues
+  for_each = local.sqs_queues
 
-  queue_url = module.sqs_queues.queues[each.key].id
+  queue_url = data.aws_sqs_queue.queues[each.key].id
 
   policy = data.aws_iam_policy_document.queue_policy[each.key].json
 
@@ -26,7 +26,7 @@ data "aws_iam_policy_document" "queue_policy" {
       }
 
       resources = [
-        module.sqs_queues.queues[each.key].arn,
+        data.aws_sqs_queue.queues[each.key].arn,
       ]
 
       condition {
