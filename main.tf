@@ -1,19 +1,3 @@
-module "sns_topics" {
-  source             = "github.com/paulo-tinoco/terraform-sns-module"
-  topics             = var.topics
-  default_fifo_topic = var.fifo
-  default_tags       = var.default_tags
-  resource_prefix    = var.resource_prefix
-}
-
-module "sqs_queues" {
-  source             = "github.com/paulo-tinoco/terraform-sqs-module"
-  queues             = var.queues
-  default_fifo_queue = var.fifo
-  default_tags       = var.default_tags
-  resource_prefix    = var.resource_prefix
-}
-
 locals {
   arn_sns_prefix = "arn:aws:sns:${var.region}:${var.account_id}:"
 
@@ -30,6 +14,13 @@ locals {
       ])
     }
   ])
+
+  queues_to_create = [
+    for queue in var.queues : {
+      name                = queue.name
+      topics_to_subscribe = queue.topics_to_subscribe
+    } if queue.create_queue == true
+  ]
 
   sqs_queues = {
     for sqs_queue in local.queues : var.fifo ? "${sqs_queue.name}.fifo" : sqs_queue.name => sqs_queue
@@ -53,11 +44,36 @@ locals {
   }
 }
 
+data "aws_sqs_queue" "queues" {
+  for_each = local.sqs_queues
+
+  name = each.key
+
+  depends_on = [
+    module.sqs_queues,
+  ]
+}
+
+module "sns_topics" {
+  source             = "github.com/paulo-tinoco/terraform-sns-module"
+  topics             = var.topics
+  default_fifo_topic = var.fifo
+  default_tags       = var.default_tags
+  resource_prefix    = var.resource_prefix
+}
+
+module "sqs_queues" {
+  source             = "github.com/paulo-tinoco/terraform-sqs-module"
+  queues             = local.queues_to_create
+  default_fifo_queue = var.fifo
+  default_tags       = var.default_tags
+  resource_prefix    = var.resource_prefix
+}
 resource "aws_sns_topic_subscription" "sns_queues_subscriptions" {
   for_each = local.topics_subscriptions
 
   topic_arn     = each.value.topic_arn
   protocol      = "sqs"
-  endpoint      = module.sqs_queues.queues[each.value.sqs_queue_name].arn
+  endpoint      = data.aws_sqs_queue.queues[each.value.sqs_queue_name].arn
   filter_policy = jsonencode(each.value.filter_policy)
 }
