@@ -34,6 +34,7 @@ variable "topics" {
     name                        = string
     content_based_deduplication = optional(bool, false)
   }))
+  default = []
 }
 
 variable "default_tags" {
