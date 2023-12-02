@@ -7,7 +7,7 @@ locals {
       topics_to_subscribe = flatten([
         for topic in sqs_queue.topics_to_subscribe : [
           {
-            name          = var.resource_prefix != "" ? "${var.resource_prefix}__${topic.name}" : topic.name
+            name          = var.resource_prefix != "" && topic.use_prefix ? "${var.resource_prefix}__${topic.name}" : topic.name
             filter_policy = topic.filter_policy != null ? topic.filter_policy : var.default_filter_policy
           }
         ]

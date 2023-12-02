@@ -22,6 +22,7 @@ variable "queues" {
     create_queue = optional(bool, true)
     topics_to_subscribe = list(object({
       name          = string
+			use_prefix    = optional(bool, true)
       filter_policy = optional(map(list(string)))
     }))
   }))
