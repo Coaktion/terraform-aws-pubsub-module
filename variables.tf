@@ -20,10 +20,18 @@ variable "queues" {
   type = list(object({
     name         = string
     create_queue = optional(bool, true)
+    service      = optional(string, null)
+    delay_seconds = optional(number, null)
+    max_message = optional(number, null)
+    message_retention_seconds = optional(number, null)
+    receive_wait_time_seconds = optional(number, null)
+    max_receive_count = optional(number, null)
     topics_to_subscribe = list(object({
       name          = string
 			use_prefix    = optional(bool, true)
       filter_policy = optional(map(list(string)))
+      content_based_deduplication = optional(bool, false)
+      create_topic  = optional(bool, true)
     }))
   }))
   default = []
