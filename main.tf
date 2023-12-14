@@ -1,22 +1,42 @@
 locals {
   arn_sns_prefix = "arn:aws:sns:${var.region}:${var.account_id}:"
 
+  queues_prefix = {
+    for queue in var.queues : queue.name => {
+      prefix = queue.service != null ? queue.service : var.resource_prefix
+    }
+  }
+
   queues = flatten([
     for sqs_queue in var.queues : {
-      name = var.resource_prefix != "" ? "${var.resource_prefix}__${sqs_queue.name}" : sqs_queue.name
+      name = local.queues_prefix[sqs_queue.name].prefix != "" ? "${local.queues_prefix[sqs_queue.name].prefix}__${sqs_queue.name}" : sqs_queue.name
+      create_queue = sqs_queue.create_queue
+      delay_seconds = sqs_queue.delay_seconds
+      max_message = sqs_queue.max_message
+      message_retention_seconds = sqs_queue.message_retention_seconds
+      receive_wait_time_seconds = sqs_queue.receive_wait_time_seconds
+      max_receive_count = sqs_queue.max_receive_count
       topics_to_subscribe = flatten([
         for topic in sqs_queue.topics_to_subscribe : [
           {
-            name          = var.resource_prefix != "" && topic.use_prefix ? "${var.resource_prefix}__${topic.name}" : topic.name
-            filter_policy = topic.filter_policy != null ? topic.filter_policy : var.default_filter_policy
+            name          = local.queues_prefix[sqs_queue.name].prefix != "" && topic.use_prefix ? "${local.queues_prefix[sqs_queue.name].prefix}__${topic.name}" : topic.name
+            filter_policy = topic.filter_policy != "" ? topic.filter_policy : var.default_filter_policy
+            content_based_deduplication = topic.content_based_deduplication
+            create_topic  = topic.create_topic
           }
         ]
       ])
     }
   ])
 
+  topics = flatten([
+    for queue in local.queues : [
+      for topic in queue.topics_to_subscribe : topic if topic.create_topic == true
+    ]
+  ])
+
   queues_to_create = [
-    for queue in var.queues : {
+    for queue in local.queues : {
       name                = queue.name
       topics_to_subscribe = queue.topics_to_subscribe
     } if queue.create_queue == true
@@ -56,10 +76,9 @@ data "aws_sqs_queue" "queues" {
 
 module "sns_topics" {
   source             = "github.com/paulo-tinoco/terraform-sns-module"
-  topics             = var.topics
+  topics             = local.topics
   default_fifo_topic = var.fifo
   default_tags       = var.default_tags
-  resource_prefix    = var.resource_prefix
 }
 
 module "sqs_queues" {
@@ -67,7 +86,6 @@ module "sqs_queues" {
   queues             = local.queues_to_create
   default_fifo_queue = var.fifo
   default_tags       = var.default_tags
-  resource_prefix    = var.resource_prefix
 }
 resource "aws_sns_topic_subscription" "sns_queues_subscriptions" {
   for_each = local.topics_subscriptions
