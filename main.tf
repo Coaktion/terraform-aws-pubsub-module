@@ -21,7 +21,7 @@ locals {
           {
             name          = local.queues_prefix[sqs_queue.name].prefix != "" && topic.use_prefix ? "${local.queues_prefix[sqs_queue.name].prefix}__${topic.name}" : topic.name
             filter_policy = topic.filter_policy != null ? topic.filter_policy : var.default_filter_policy
-            content_based_deduplication = topic.content_based_deduplication
+            content_based_deduplication = var.fifo ? true : topic.content_based_deduplication
             create_topic  = topic.create_topic
           }
         ]
