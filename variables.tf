@@ -18,20 +18,21 @@ variable "default_filter_policy" {
 variable "queues" {
   description = "A list of maps describing the queues to create. Each map must contain a name key. The following keys are optional: delay_seconds, max_message, message_retention_seconds, receive_wait_time_seconds, max_receive_count, topics_to_subscribe."
   type = list(object({
-    name         = string
-    create_queue = optional(bool, true)
-    service      = optional(string, null)
-    delay_seconds = optional(number, null)
-    max_message = optional(number, null)
-    message_retention_seconds = optional(number, null)
-    receive_wait_time_seconds = optional(number, null)
-    max_receive_count = optional(number, null)
+    name                       = string
+    create_queue               = optional(bool, true)
+    service                    = optional(string, null)
+    delay_seconds              = optional(number, null)
+    max_message                = optional(number, null)
+    visibility_timeout_seconds = optional(number, null)
+    message_retention_seconds  = optional(number, null)
+    receive_wait_time_seconds  = optional(number, null)
+    max_receive_count          = optional(number, null)
     topics_to_subscribe = list(object({
-      name          = string
-			use_prefix    = optional(bool, true)
-      filter_policy = optional(map(list(string)))
+      name                        = string
+      use_prefix                  = optional(bool, true)
+      filter_policy               = optional(map(list(string)))
       content_based_deduplication = optional(bool, false)
-      create_topic  = optional(bool, true)
+      create_topic                = optional(bool, true)
     }))
   }))
   default = []
