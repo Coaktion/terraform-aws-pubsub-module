@@ -76,14 +76,14 @@ data "aws_sqs_queue" "queues" {
 }
 
 module "sns_topics" {
-  source             = "github.com/paulo-tinoco/terraform-sns-module"
+  source             = "github.com/Coaktion/terraform-aws-sns-module"
   topics             = local.topics
   default_fifo_topic = var.fifo
   default_tags       = var.default_tags
 }
 
 module "sqs_queues" {
-  source             = "github.com/paulo-tinoco/terraform-sqs-module"
+  source             = "github.com/Coaktion/terraform-aws-sqs-module"
   queues             = local.queues_to_create
   default_fifo_queue = var.fifo
   default_tags       = var.default_tags
