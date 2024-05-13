@@ -9,20 +9,21 @@ locals {
 
   queues = flatten([
     for sqs_queue in var.queues : {
-      name = local.queues_prefix[sqs_queue.name].prefix != "" ? "${local.queues_prefix[sqs_queue.name].prefix}__${sqs_queue.name}" : sqs_queue.name
-      create_queue = sqs_queue.create_queue
-      delay_seconds = sqs_queue.delay_seconds
-      max_message = sqs_queue.max_message
-      message_retention_seconds = sqs_queue.message_retention_seconds
-      receive_wait_time_seconds = sqs_queue.receive_wait_time_seconds
-      max_receive_count = sqs_queue.max_receive_count
+      name                       = local.queues_prefix[sqs_queue.name].prefix != "" ? "${local.queues_prefix[sqs_queue.name].prefix}__${sqs_queue.name}" : sqs_queue.name
+      create_queue               = sqs_queue.create_queue
+      delay_seconds              = sqs_queue.delay_seconds
+      max_message                = sqs_queue.max_message
+      visibility_timeout_seconds = sqs_queue.visibility_timeout_seconds
+      message_retention_seconds  = sqs_queue.message_retention_seconds
+      receive_wait_time_seconds  = sqs_queue.receive_wait_time_seconds
+      max_receive_count          = sqs_queue.max_receive_count
       topics_to_subscribe = flatten([
         for topic in sqs_queue.topics_to_subscribe : [
           {
-            name          = local.queues_prefix[sqs_queue.name].prefix != "" && topic.use_prefix ? "${local.queues_prefix[sqs_queue.name].prefix}__${topic.name}" : topic.name
-            filter_policy = topic.filter_policy != null ? topic.filter_policy : var.default_filter_policy
+            name                        = local.queues_prefix[sqs_queue.name].prefix != "" && topic.use_prefix ? "${local.queues_prefix[sqs_queue.name].prefix}__${topic.name}" : topic.name
+            filter_policy               = topic.filter_policy != null ? topic.filter_policy : var.default_filter_policy
             content_based_deduplication = var.fifo ? true : topic.content_based_deduplication
-            create_topic  = topic.create_topic
+            create_topic                = topic.create_topic
           }
         ]
       ])
@@ -75,14 +76,14 @@ data "aws_sqs_queue" "queues" {
 }
 
 module "sns_topics" {
-  source             = "github.com/paulo-tinoco/terraform-sns-module"
+  source             = "github.com/Coaktion/terraform-aws-sns-module"
   topics             = local.topics
   default_fifo_topic = var.fifo
   default_tags       = var.default_tags
 }
 
 module "sqs_queues" {
-  source             = "github.com/paulo-tinoco/terraform-sqs-module"
+  source             = "github.com/Coaktion/terraform-aws-sqs-module"
   queues             = local.queues_to_create
   default_fifo_queue = var.fifo
   default_tags       = var.default_tags
