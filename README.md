@@ -1,12 +1,12 @@
 # Terraform SNS Topic Subscription Module
 
-Terraform module which creates SNS Topic Subscription resources on AWS.
+Módulo Terraform para criar tópicos SNS e filas SQS com inscrição automática.
 
 ## Usage
 
 ```hcl
-module "sns_topic_subscription" {
-  source = "github.com/paulo-tinoco/terraform-sns-topic-subscription-module"
+module "pubsub" {
+  source = "github.com/Coaktion/terraform-aws-pubsub-module"
 
   topics = [
     {
