@@ -37,10 +37,7 @@ locals {
   ])
 
   queues_to_create = [
-    for queue in local.queues : {
-      name                = queue.name
-      topics_to_subscribe = queue.topics_to_subscribe
-    } if queue.create_queue == true
+    for queue in local.queues : queue if queue.create_queue == true
   ]
 
   sqs_queues = {
