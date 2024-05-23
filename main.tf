@@ -21,6 +21,7 @@ locals {
         for topic in sqs_queue.topics_to_subscribe : [
           {
             name                        = local.queues_prefix[sqs_queue.name].prefix != "" && topic.use_prefix ? "${local.queues_prefix[sqs_queue.name].prefix}__${topic.name}" : topic.name
+            policy                      = topic.policy
             filter_policy               = topic.filter_policy != null ? topic.filter_policy : var.default_filter_policy
             content_based_deduplication = var.fifo ? true : topic.content_based_deduplication
             create_topic                = topic.create_topic
@@ -35,6 +36,7 @@ locals {
       for topic in queue.topics_to_subscribe : topic if topic.create_topic == true
     ]
   ])
+  topics_to_create = concat(local.topics, var.topics)
 
   queues_to_create = [
     for queue in local.queues : queue if queue.create_queue == true
@@ -74,7 +76,7 @@ data "aws_sqs_queue" "queues" {
 
 module "sns_topics" {
   source             = "github.com/Coaktion/terraform-aws-sns-module"
-  topics             = local.topics
+  topics             = local.topics_to_create
   default_fifo_topic = var.fifo
   default_tags       = var.default_tags
 }
