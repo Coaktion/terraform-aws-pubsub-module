@@ -8,7 +8,7 @@ Módulo Terraform para criar tópicos SNS e filas SQS com inscrição automátic
 module "pubsub" {
   source = "github.com/Coaktion/terraform-aws-pubsub-module"
 
-  topics = [
+  topics = [ # Will always create a topic
     {
       name = "validation_topic"
     }
@@ -20,12 +20,17 @@ module "pubsub" {
       topics_to_subscribe = [
         {
           name = "validation_topic"
+        },
+        {
+          name = "re_validation_topic"
+          # You can choose create the topic here or in the "topics" variable
+          create_topic = true # Optional, default is false.
         }
       ]
     }
   ]
 
-  fifo       = true
+  fifo       = true # Optional, default is false.
   account_id = "000000000000"
 }
 ```

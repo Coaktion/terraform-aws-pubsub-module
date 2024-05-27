@@ -30,9 +30,10 @@ variable "queues" {
     topics_to_subscribe = list(object({
       name                        = string
       use_prefix                  = optional(bool, true)
+      policy                      = optional(string)
       filter_policy               = optional(map(list(string)))
       content_based_deduplication = optional(bool, false)
-      create_topic                = optional(bool, true)
+      create_topic                = optional(bool, false)
     }))
   }))
   default = []
@@ -42,6 +43,8 @@ variable "topics" {
   description = "A list of maps describing the topics to create. Each map must contain a name key. The following keys are optional: display_name, kms_master_key_id, policy, delivery_policy, sqs_success_feedback_sample_rate, sqs_failure_feedback_sample_rate, sqs_max_message_size, sqs_message_retention_seconds, sqs_receive_wait_time_seconds, sqs_visibility_timeout_seconds, sqs_delay_seconds, fifo_topic, content_based_deduplication, application_success_feedback_sample_rate, application_failure_feedback_sample_rate, application_max_message_size, application_message_retention_seconds, application_delivery_policy, application_receive_wait_time_seconds, application_visibility_timeout_seconds, application_delay_seconds, application_success_feedback_role_arn, application_failure_feedback_role_arn, application_success_feedback_target_arn, application_failure_feedback_target_arn, topics_to_subscribe."
   type = list(object({
     name                        = string
+    policy                      = optional(string)
+    filter_policy               = optional(map(list(string)))
     content_based_deduplication = optional(bool, false)
   }))
   default = []
