@@ -36,7 +36,6 @@ locals {
       for topic in queue.topics_to_subscribe : topic if topic.create_topic == true
     ]
   ])
-  topics_to_create = concat(local.topics, var.topics)
 
   queues_to_create = [
     for queue in local.queues : queue if queue.create_queue == true
@@ -76,7 +75,7 @@ data "aws_sqs_queue" "queues" {
 
 module "sns_topics" {
   source             = "github.com/Coaktion/terraform-aws-sns-module"
-  topics             = local.topics_to_create
+  topics             = local.topics
   default_fifo_topic = var.fifo
   default_tags       = var.default_tags
 }
