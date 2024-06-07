@@ -80,6 +80,7 @@ data "aws_sqs_queue" "queues" {
 
 module "sns_topics" {
   source             = "github.com/Coaktion/terraform-aws-sns-module"
+  resource_prefix    = var.resource_prefix
   topics             = local.topics
   default_fifo_topic = var.fifo
   default_tags       = var.default_tags
