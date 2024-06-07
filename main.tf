@@ -32,9 +32,14 @@ locals {
   ])
 
   topics = flatten([
-    for queue in local.queues : [
-      for topic in queue.topics_to_subscribe : topic if topic.create_topic == true
-    ]
+    concat(
+      var.topics,
+      flatten([
+        for queue in local.queues : [
+          for topic in queue.topics_to_subscribe : topic if topic.create_topic == true
+        ]
+      ])
+    )
   ])
 
   queues_to_create = [
@@ -93,4 +98,9 @@ resource "aws_sns_topic_subscription" "sns_queues_subscriptions" {
   protocol      = "sqs"
   endpoint      = data.aws_sqs_queue.queues[each.value.sqs_queue_name].arn
   filter_policy = jsonencode(each.value.filter_policy)
+
+  depends_on = [
+    module.sns_topics,
+    module.sqs_queues,
+  ]
 }
