@@ -1,59 +1,69 @@
 provider "aws" {
-  access_key                  = "test"
-  secret_key                  = "test"
-  region                      = "us-east-1"
-  s3_use_path_style           = false
-  skip_credentials_validation = true
-  skip_metadata_api_check     = true
-
-  endpoints {
-    apigateway     = "http://localhost:4566"
-    apigatewayv2   = "http://localhost:4566"
-    cloudformation = "http://localhost:4566"
-    cloudwatch     = "http://localhost:4566"
-    dynamodb       = "http://localhost:4566"
-    ec2            = "http://localhost:4566"
-    es             = "http://localhost:4566"
-    elasticache    = "http://localhost:4566"
-    firehose       = "http://localhost:4566"
-    iam            = "http://localhost:4566"
-    kinesis        = "http://localhost:4566"
-    lambda         = "http://localhost:4566"
-    rds            = "http://localhost:4566"
-    redshift       = "http://localhost:4566"
-    route53        = "http://localhost:4566"
-    s3             = "http://s3.localhost.localstack.cloud:4566"
-    secretsmanager = "http://localhost:4566"
-    ses            = "http://localhost:4566"
-    sns            = "http://localhost:4566"
-    sqs            = "http://localhost:4566"
-    ssm            = "http://localhost:4566"
-    stepfunctions  = "http://localhost:4566"
-    sts            = "http://localhost:4566"
-  }
+  region = "us-east-1"
 }
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 
 module "name_service_example_sns_topics" {
   source = "../"
+
+  account_id      = data.aws_caller_identity.current.account_id
+  region          = data.aws_region.current.name # Opcional, padrão => "us-east-1"
+  resource_prefix = "example"                    # Opcional
+
+  fifo = true # Opcional, padrão => false
+
   topics = [
     {
-      name = "validation_topic"
+      name = "example_topic"
+      policy                      = ""    # Opcional
+      filter_policy = { # Opcional, padrão => {}
+        "eventType" = ["order_placed", "order_cancelled"]
+      }
+      content_based_deduplication = false # Opcional, padrão => false. Obrigatório ser "true" para tópicos fifo
     }
   ]
 
   queues = [
     {
-      name = "validation_queue"
+      name                       = "example_queue"
+      create_queue               = true              # Opcional, padrão => true
+      service                    = "example_service" # Opcional
+      delay_seconds              = 30                # Opcional
+      max_message                = 10                # Opcional
+      visibility_timeout_seconds = 60                # Opcional
+      message_retention_seconds  = 1209600           # Opcional
+      receive_wait_time_seconds  = 20                # Opcional
+      max_receive_count          = 5                 # Opcional
       topics_to_subscribe = [
         {
-          name = "validation_topic"
+          name       = "example_topic"
+          use_prefix = false # Opcional, padrão => true
+
+          # IMPORTANTE: Função redundante com a variável "topics", utilizar um ou outro.
+          policy                      = ""   # Opcional
+          filter_policy               = {}   # Opcional, padrão => {}
+          content_based_deduplication = true # Opcional, padrão => false. Obrigatório ser "true" para tópicos fifo
+          create_topic                = true # Opcional, padrão => false.
+        },
+        {
+          name = "another_example_topic"
+
+          # IMPORTANTE: Função redundante com a variável "topics", utilizar um ou outro.
+          use_prefix                  = true  # Opcional, padrão => true
+          policy                      = ""    # Opcional
+          filter_policy               = {}    # Opcional, padrão => {}
+          content_based_deduplication = false # Opcional, padrão => false. Obrigatório ser "true" para tópicos fifo
+          create_topic                = true  # Opcional, padrão => false
         }
       ]
     }
   ]
 
-  # fifo       = true
-  account_id = "000000000000"
-
-  resource_prefix = "name_service_example"
+  default_tags = { # Opcional, padrão => {}
+    # chave = valor
+    Environment = "dev"
+    Project     = "example_project"
+  }
 }
